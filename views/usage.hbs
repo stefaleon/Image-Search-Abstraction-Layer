@@ -1,0 +1,18 @@
+{{> header }}
+
+<div class="container">
+	<h3>{{pageTitle}}</h3>
+	
+	<p>
+		<br /> Search for images:
+		<br /><p id="usesyntax">http://localhost:3000/api/imagesearch/[SEARCH_TERM]?offset=[NUMBER_OF_RESULTS = 1..10]</p>
+		e.g. <a href="http://localhost:3000/api/imagesearch/fluffy puppies?offset=7">http://localhost:3000/api/imagesearch/fluffy puppies?offset=7</a>
+		<br /><br />
+		<br /> Browse recent search queries:		
+		<br /><a href="http://localhost:3000/api/latest/imagesearch">http://localhost:3000/api/latest/imagesearch</a>
+
+	</p>
+	
+</div>
+
+{{> footer }}
