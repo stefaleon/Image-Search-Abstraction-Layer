@@ -6,23 +6,28 @@ const keys = require('./keys');
 
 const PORT = process.env.PORT || 3000;
 
+const mongoose = require('mongoose');
+const SearchedTerm = require('./models/searchedTerm');
+const dbURL = process.env.dbURL || 'mongodb://localhost/searchedterms';
+
+mongoose.connect(dbURL);
+
 var app = express();
 
 hbs.registerPartials(__dirname + '/views/partials');
 app.set('view engine', 'hbs');
 app.use(express.static(__dirname + '/public'));
 
-var queriesLog = [];
 
-queryLogger = (req, res, next) => {
+// middleware that logs searched terms and saves to db
+var queryLogger = (req, res, next) => {
   var now = new Date().toUTCString();
   var log = {   
     term:`${req.params.searchString}`,
     when:`${now}`
   };  
-  console.log(log);
-  queriesLog.push(log);
-  //console.log(queriesLog);  
+  console.log('Current log ' + JSON.stringify(log) + ' is being added to db.');
+  SearchedTerm.create(log);  
   next();
 };
 
@@ -41,13 +46,17 @@ app.get('/about', (req, res) => {
 // api/imagesearch/:SEARCH_TERM route, responds with search results array of json objects
 app.get('/api/imagesearch/:searchString', queryLogger, (req, res) => {
 
+  // search term
   var searchFor = encodeURIComponent(req.params.searchString);
   //console.log('searchFor:' ,searchFor);
+  // number of results 
   var offset = req.query.offset || 10;
   //console.log('offset:', offset);
+  // make the url for the Google CSE, cx is the search engine ID, key is the Google API key
   var url = `https://www.googleapis.com/customsearch/v1?cx=${keys.CX}&key=${keys.KEY}&q=${searchFor}&searchType=image&num=${offset}`;
   console.log('url:', url);
   
+  // get data from api
   var data = {};
   axios.get(url).then((response) => {
     //console.log('response:', response);
@@ -69,13 +78,20 @@ app.get('/api/imagesearch/:searchString', queryLogger, (req, res) => {
 
 });
 
-// /api/latest/imagesearch/ route, responds with latest search queries log
+// /api/latest/imagesearch/ route, responds with latest search queries log from db
 app.get('/api/latest/imagesearch/', (req, res) => {
-  if (queriesLog) {
-    res.send(queriesLog);
-  } else {
-    res.send('this is the latest search queries logger page');
-  }	
+
+  SearchedTerm.find({}).sort('-when').limit(10).exec((err, foundSearchedTerms) => {
+    if (err) {
+      throw err;    
+    } else if (foundSearchedTerms) {
+      console.log('found searchedterms:',foundSearchedTerms);     
+      res.send(foundSearchedTerms);  
+    } else {
+      res.status(404).send("Not found."); 
+    }       
+  });   
+
 });
 
 

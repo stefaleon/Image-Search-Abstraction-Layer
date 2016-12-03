@@ -16,4 +16,4 @@
 * Express 
 * Handlebars  
 * axios  
-... mongoose
+* mongoose
