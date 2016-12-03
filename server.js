@@ -1,5 +1,6 @@
 const express = require('express');
 const hbs = require('hbs');
+const axios = require('axios');
 
 const keys = require('./keys');
 
@@ -21,7 +22,7 @@ queryLogger = (req, res, next) => {
   };  
   console.log(log);
   queriesLog.push(log);
-  console.log(queriesLog);  
+  //console.log(queriesLog);  
   next();
 };
 
@@ -39,82 +40,33 @@ app.get('/about', (req, res) => {
 
 // api/imagesearch/:SEARCH_TERM route, responds with search results array of json objects
 app.get('/api/imagesearch/:searchString', queryLogger, (req, res) => {
+
+  var searchFor = encodeURIComponent(req.params.searchString);
+  //console.log('searchFor:' ,searchFor);
+  var offset = req.query.offset || 10;
+  //console.log('offset:', offset);
+  var url = `https://www.googleapis.com/customsearch/v1?cx=${keys.CX}&key=${keys.KEY}&q=${searchFor}&searchType=image&num=${offset}`;
+  console.log('url:', url);
   
-  var data = { 
-   "items": [
-    {
-     "kind": "customsearch#result",
-     "title": "Funny Cats Compilation [Most See] Funny Cat Videos Ever Part 1 ...",
-     "htmlTitle": "Funny \u003cb\u003eCats\u003c/b\u003e Compilation [Most See] Funny \u003cb\u003eCat\u003c/b\u003e Videos Ever Part 1 ...",
-     "link": "https://i.ytimg.com/vi/tntOCGkgt98/maxresdefault.jpg",
-     "displayLink": "www.youtube.com",
-     "snippet": "Funny Cats Compilation [Most ...",
-     "htmlSnippet": "Funny \u003cb\u003eCats\u003c/b\u003e Compilation [Most ...",
-     "mime": "image/jpeg",
-     "image": {
-      "contextLink": "https://www.youtube.com/watch?v=tntOCGkgt98",
-      "height": 1200,
-      "width": 1600,
-      "byteSize": 136356,
-      "thumbnailLink": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRMnDp0nNBLHwunbh2DDIBhN_Cj9zwRPq-Hp0sB-LlSWy2ijcFs-uyD-vE",
-      "thumbnailHeight": 113,
-      "thumbnailWidth": 150
-     }
-    },
-    {
-     "kind": "customsearch#result",
-     "title": "Saudi Cleric Says Posing for Photos With Cats Is Forbidden",
-     "htmlTitle": "Saudi Cleric Says Posing for Photos With \u003cb\u003eCats\u003c/b\u003e Is Forbidden",
-     "link": "http://s.newsweek.com/sites/www.newsweek.com/files/2016/05/25/saudi-arabia-cat-ban.jpg",
-     "displayLink": "www.newsweek.com",
-     "snippet": "... With Cats Is Forbidden",
-     "htmlSnippet": "... With \u003cb\u003eCats\u003c/b\u003e Is Forbidden",
-     "mime": "image/jpeg",
-     "image": {
-      "contextLink": "http://www.newsweek.com/saudi-cleric-coughs-hairballs-over-cat-pictures-gulf-kingdom-463356",
-      "height": 2001,
-      "width": 3000,
-      "byteSize": 710497,
-      "thumbnailLink": "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcQSYJ5JwQn457lR37X4kZWBpzEbUhFqxWs2duSz3lJ4sWNzGGLy48nuRK8",
-      "thumbnailHeight": 100,
-      "thumbnailWidth": 150
-     }
-    },
-    {
-     "kind": "customsearch#result",
-     "title": "Cats scared of Cucumbers Compilation - Cats Vs Cucumbers - Funny ...",
-     "htmlTitle": "\u003cb\u003eCats\u003c/b\u003e scared of Cucumbers Compilation - \u003cb\u003eCats\u003c/b\u003e Vs Cucumbers - Funny ...",
-     "link": "https://i.ytimg.com/vi/cNycdfFEgBc/maxresdefault.jpg",
-     "displayLink": "www.youtube.com",
-     "snippet": "Cats scared of Cucumbers ...",
-     "htmlSnippet": "\u003cb\u003eCats\u003c/b\u003e scared of Cucumbers ...",
-     "mime": "image/jpeg",
-     "image": {
-      "contextLink": "https://www.youtube.com/watch?v=cNycdfFEgBc",
-      "height": 720,
-      "width": 1280,
-      "byteSize": 142044,
-      "thumbnailLink": "https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcQIpKVlrysjWTWyDxnvCg12eSyOy2CcISl-ZyHcTmhmhp-zL78Mq7s0_4Li",
-      "thumbnailHeight": 84,
-      "thumbnailWidth": 150
-     }
-    }
-   ]
-  };
+  var data = {};
+  axios.get(url).then((response) => {
+    //console.log('response:', response);
+    //console.log('response.data.items:', response.data.items);
+    var outArr = [];
+    response.data.items.forEach((item) => {
+      outArr.push({  
+        url: item.link,
+        snippet: item.snippet,
+        thumbnail: item.image.thumbnailLink,
+        context: item.image.contextLink
+      });
+    });     
+    res.send(outArr);
+  }).catch((err) => {
+    console.log(err.message);
+    res.send('Could not retrieve data for this query.')
+  });
 
-
-  var outArr = [];
-
-  data.items.forEach((item) => {
-    outArr.push({  
-      url: item.link,
-      snippet: item.snippet,
-      thumbnail: item.image.thumbnailLink,
-      context: item.image.contextLink
-    });
-  }); 
-	
-	res.send(outArr);
 });
 
 // /api/latest/imagesearch/ route, responds with latest search queries log
@@ -131,7 +83,3 @@ app.listen(PORT, process.env.IP, () => {
 	console.log(`Server started on port ${PORT}.`);
 });
 
-
-// TODO
-// http request
-// add mongoose
