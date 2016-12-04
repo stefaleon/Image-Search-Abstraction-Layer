@@ -87,8 +87,13 @@ app.get('/api/latest/imagesearch/', (req, res) => {
     if (err) {
       throw err;    
     } else if (foundSearchedTerms) {
-      console.log('found searchedterms:',foundSearchedTerms);     
-      res.send(foundSearchedTerms);  
+      console.log('found searchedterms:', foundSearchedTerms);     
+      outArr = [];
+      foundSearchedTerms.forEach((element) => {
+        var outputElement = {term: element.term, when: element.when};
+        outArr.push(outputElement);
+      });
+      res.send(outArr);  
     } else {
       res.status(404).send("Not found."); 
     }       
