@@ -7,8 +7,8 @@
 
 ## Usage
 
-* http://localhost:3000/api/imagesearch/[SEARCH_TERM]?offset=[NUMBER_OF_RESULTS]
-* http://localhost:3000/api/latest/imagesearch
+* Search for images: https://image-search-ls.herokuapp.com/api/imagesearch/[SEARCH_TERM]?offset=[NUMBER_OF_RESULTS]
+* Browse recent search queries: https://image-search-ls.herokuapp.com/api/latest/imagesearch
 
 
 ### Stack
@@ -17,3 +17,5 @@
 * Handlebars  
 * axios  
 * mongoose
+
+* Searching with Google CSE

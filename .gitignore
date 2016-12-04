@@ -1,3 +1,5 @@
 node_modules/
 bkp/
 keys.js
+heroku.txt
+mongolab.txt

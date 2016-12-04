@@ -53,7 +53,9 @@ app.get('/api/imagesearch/:searchString', queryLogger, (req, res) => {
   var offset = req.query.offset || 10;
   //console.log('offset:', offset);
   // make the url for the Google CSE, cx is the search engine ID, key is the Google API key
-  var url = `https://www.googleapis.com/customsearch/v1?cx=${keys.CX}&key=${keys.KEY}&q=${searchFor}&searchType=image&num=${offset}`;
+  const CX = process.env.CX || keys.CX;
+  const KEY = process.env.KEY || keys.KEY;
+  var url = `https://www.googleapis.com/customsearch/v1?cx=${CX}&key=${KEY}&q=${searchFor}&searchType=image&num=${offset}`;
   console.log('url:', url);
   
   // get data from api
