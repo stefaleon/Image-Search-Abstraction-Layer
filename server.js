@@ -21,7 +21,7 @@ app.use(express.static(__dirname + '/public'));
 
 // middleware that logs searched terms and saves to db
 var queryLogger = (req, res, next) => {
-  var now = new Date().toUTCString();
+  var now = new Date().toISOString();
   var log = {   
     term:`${req.params.searchString}`,
     when:`${now}`
